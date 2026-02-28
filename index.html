@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>🎰 Casino 1-100</title>
+<title>🎰 Lottery 1-100</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
 <style>
@@ -13,41 +13,108 @@ body{
     font-family:Arial;
 }
 
-#numero{
-    font-size:80px;
-    margin-top:40px;
+.grid{
+    display:grid;
+    grid-template-columns: repeat(10, 1fr);
+    gap:5px;
+    margin:20px;
+}
+
+.numero{
+    padding:10px;
+    background:#222;
+    border:1px solid gold;
+    cursor:pointer;
+}
+
+.numero.vendido{
+    background:red;
+    cursor:not-allowed;
 }
 
 button{
-    padding:15px 40px;
-    font-size:20px;
+    padding:10px 20px;
+    margin-top:10px;
     background:gold;
     border:none;
-    margin-top:30px;
     cursor:pointer;
+}
+
+#winner{
+    margin-top:20px;
+    font-size:20px;
 }
 </style>
 </head>
 
 <body>
 
-<h1>🎰 CASINO 1-100 🎰</h1>
+<h1>🎰 LOTTERY 1-100 🎰</h1>
+<h3>Precio por número: $0.99</h3>
 
-<div id="numero">0</div>
+<input type="text" id="telegramId" placeholder="Tu ID de Telegram"><br>
 
-<button onclick="jugar()">JUGAR</button>
+<div class="grid" id="numeros"></div>
+
+<button onclick="elegirGanador()">🎯 Elegir Ganador</button>
+
+<div id="winner"></div>
 
 <script>
 
-let numeros = [];
+let vendidos = {};
+let ganadorElegido = false;
+
+const grid = document.getElementById("numeros");
 
 for(let i=1;i<=100;i++){
-    numeros.push(i);
+    let div = document.createElement("div");
+    div.innerText = i;
+    div.classList.add("numero");
+
+    div.onclick = function(){
+        let id = document.getElementById("telegramId").value;
+
+        if(!id){
+            alert("Debes poner tu ID de Telegram");
+            return;
+        }
+
+        if(ganadorElegido){
+            alert("El juego terminó");
+            return;
+        }
+
+        if(vendidos[i]){
+            alert("Número ya vendido");
+            return;
+        }
+
+        vendidos[i] = id;
+        div.classList.add("vendido");
+    }
+
+    grid.appendChild(div);
 }
 
-function jugar(){
-    let random = numeros[Math.floor(Math.random()*numeros.length)];
-    document.getElementById("numero").innerText = random;
+function elegirGanador(){
+
+    let claves = Object.keys(vendidos);
+
+    if(claves.length == 0){
+        alert("No hay números vendidos");
+        return;
+    }
+
+    let random = claves[Math.floor(Math.random()*claves.length)];
+
+    let idGanador = vendidos[random];
+
+    document.getElementById("winner").innerHTML =
+    "🏆 Número ganador: " + random + 
+    "<br>Ganador ID: " + idGanador;
+
+    ganadorElegido = true;
 }
 
 </script>
