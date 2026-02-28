@@ -16,15 +16,16 @@ body{
 .grid{
     display:grid;
     grid-template-columns: repeat(10, 1fr);
-    gap:5px;
+    gap:6px;
     margin:20px;
 }
 
 .numero{
-    padding:10px;
-    background:#222;
-    border:1px solid gold;
+    padding:12px;
+    background:#111;
+    border:2px solid gold;
     cursor:pointer;
+    font-weight:bold;
 }
 
 .numero.vendido{
@@ -32,17 +33,9 @@ body{
     cursor:not-allowed;
 }
 
-button{
-    padding:10px 20px;
-    margin-top:10px;
-    background:gold;
-    border:none;
-    cursor:pointer;
-}
-
 #winner{
     margin-top:20px;
-    font-size:20px;
+    font-size:24px;
 }
 </style>
 </head>
@@ -52,26 +45,25 @@ button{
 <h1>🎰 LOTTERY 1-100 🎰</h1>
 <h3>Precio por número: $0.99</h3>
 
-<input type="text" id="telegramId" placeholder="Tu ID de Telegram"><br>
-
 <div class="grid" id="numeros"></div>
-
-<button onclick="elegirGanador()">🎯 Elegir Ganador</button>
 
 <div id="winner"></div>
 
 <script>
 
 let vendidos = {};
+let totalVendidos = 0;
 let animando = false;
-let ganadorFinal = null;
 
 const grid = document.getElementById("numeros");
+const winnerDiv = document.getElementById("winner");
 
+// ID automático desde Telegram
 let user = Telegram.WebApp.initDataUnsafe.user;
-let telegramId = user ? user.id : "Desconocido";
+let telegramId = user ? user.id : "Invitado";
 
 for(let i=1;i<=100;i++){
+
     let div = document.createElement("div");
     div.innerText = i;
     div.classList.add("numero");
@@ -87,42 +79,38 @@ for(let i=1;i<=100;i++){
 
         vendidos[i] = telegramId;
         div.classList.add("vendido");
+
+        totalVendidos++;
+
+        if(totalVendidos === 100){
+            iniciarSorteo();
+        }
     }
 
     grid.appendChild(div);
 }
 
-function elegirGanador(){
-
-    if(animando) return;
-
-    let claves = Object.keys(vendidos);
-
-    if(claves.length == 0){
-        alert("No hay números vendidos");
-        return;
-    }
+function iniciarSorteo(){
 
     animando = true;
-
-    let contador = 0;
+    let tiempo = 0;
 
     let intervalo = setInterval(function(){
 
-        let randomVisual = Math.floor(Math.random()*100)+1;
-        document.getElementById("winner").innerHTML =
-        "🎲 Sorteando: " + randomVisual;
+        let numeroVisual = Math.floor(Math.random()*100)+1;
+        winnerDiv.innerHTML = "🎲 Sorteando: " + numeroVisual;
 
-        contador++;
+        tiempo += 100;
 
-        if(contador >= 100){ // 100 cambios ≈ 10 segundos
+        if(tiempo >= 10000){
+
             clearInterval(intervalo);
 
+            let claves = Object.keys(vendidos);
             let random = claves[Math.floor(Math.random()*claves.length)];
-            ganadorFinal = random;
 
-            document.getElementById("winner").innerHTML =
-            "🏆 Número ganador: " + random;
+            winnerDiv.innerHTML =
+            "🏆 NÚMERO GANADOR: " + random;
 
             animando = false;
         }
@@ -131,3 +119,6 @@ function elegirGanador(){
 }
 
 </script>
+
+</body>
+</html>
