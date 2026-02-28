@@ -60,12 +60,16 @@ button{
 
 <div id="winner"></div>
 
-<script>
+<script> 
 
 let vendidos = {};
-let ganadorElegido = false;
+let animando = false;
+let ganadorFinal = null;
 
 const grid = document.getElementById("numeros");
+
+let user = Telegram.WebApp.initDataUnsafe.user;
+let telegramId = user ? user.id : "Desconocido";
 
 for(let i=1;i<=100;i++){
     let div = document.createElement("div");
@@ -73,24 +77,15 @@ for(let i=1;i<=100;i++){
     div.classList.add("numero");
 
     div.onclick = function(){
-        let id = document.getElementById("telegramId").value;
 
-        if(!id){
-            alert("Debes poner tu ID de Telegram");
-            return;
-        }
-
-        if(ganadorElegido){
-            alert("El juego terminó");
-            return;
-        }
+        if(animando) return;
 
         if(vendidos[i]){
             alert("Número ya vendido");
             return;
         }
 
-        vendidos[i] = id;
+        vendidos[i] = telegramId;
         div.classList.add("vendido");
     }
 
@@ -99,6 +94,8 @@ for(let i=1;i<=100;i++){
 
 function elegirGanador(){
 
+    if(animando) return;
+
     let claves = Object.keys(vendidos);
 
     if(claves.length == 0){
@@ -106,18 +103,31 @@ function elegirGanador(){
         return;
     }
 
-    let random = claves[Math.floor(Math.random()*claves.length)];
+    animando = true;
 
-    let idGanador = vendidos[random];
+    let contador = 0;
 
-    document.getElementById("winner").innerHTML =
-    "🏆 Número ganador: " + random + 
-    "<br>Ganador ID: " + idGanador;
+    let intervalo = setInterval(function(){
 
-    ganadorElegido = true;
+        let randomVisual = Math.floor(Math.random()*100)+1;
+        document.getElementById("winner").innerHTML =
+        "🎲 Sorteando: " + randomVisual;
+
+        contador++;
+
+        if(contador >= 100){ // 100 cambios ≈ 10 segundos
+            clearInterval(intervalo);
+
+            let random = claves[Math.floor(Math.random()*claves.length)];
+            ganadorFinal = random;
+
+            document.getElementById("winner").innerHTML =
+            "🏆 Número ganador: " + random;
+
+            animando = false;
+        }
+
+    },100);
 }
 
 </script>
-
-</body>
-</html>
